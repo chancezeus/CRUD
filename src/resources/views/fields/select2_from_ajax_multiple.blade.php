@@ -1,9 +1,14 @@
+@php
+    $connected_entity = new $field['model'];
+    $connected_entity_key_name = $connected_entity->getKeyName();
+@endphp
+
 <!-- select2 from ajax multiple -->
 <div @include('crud::inc.field_wrapper_attributes') >
     <label>{!! $field['label'] !!}</label>
     <input type="hidden" name="{{ $field['name'] }}" id="select2_ajax_multiple_{{ $field['name'] }}"
         @if(isset($field['value']))
-            value="{{ $field['value'] }}"
+            value="{{ $field['value']->implode($connected_entity_key_name, ',') }}"
         @endif
     @include('crud::inc.field_attributes', ['default_class' =>  'form-control'])
     >
@@ -13,11 +18,6 @@
         <p class="help-block">{!! $field['hint'] !!}</p>
     @endif
 </div>
-
-@php
-    $connected_entity = new $field['model'];
-    $connected_entity_key_name = $connected_entity->getKeyName();
-@endphp
 
 {{-- ########################################## --}}
 {{-- Extra CSS and JS for this particular field --}}
@@ -66,9 +66,8 @@
 
                             return {
                                 results: $.map(data.data, function (item) {
-                                    textField = "{{$field['attribute']}}";
                                     return {
-                                        text: item[textField],
+                                        text: item["{{$field['attribute']}}"],
                                         id: item["{{ $connected_entity_key_name }}"]
                                     }
                                 }),
@@ -78,14 +77,21 @@
                         cache: true
                     },
                     initSelection: function(element, callback) {
-                        // the input tag has a value attribute preloaded that points to a preselected repository's id
-                        // this function resolves that id attribute to an object that select2 can render
-                        // using its formatResult renderer - that way the repository name is shown preselected
-                        $.ajax("{{ $field['data_source'] }}" + '/' + "{{ $field['value'] ? $field['value'] : 0 }}", {
+                        var values = element.val().split(',');
+                        var results = [];
+
+                        $.when.apply($, values.map(function(value) {
+                            return $.ajax('{{ $field['data_source'] }}/' + value, {
                             dataType: "json"
                         }).done(function(data) {
-                            textField = "{{$field['attribute']}}";
-                            callback({ text: data[textField], id: data["{{ $connected_entity_key_name }}"] });
+                                results.push({
+                                    text: data["{{$field['attribute']}}"],
+                                    id: data["{{ $connected_entity_key_name }}"]
+                                });
+                            });
+                        })).done(function() {
+                            console.log(results);
+                            callback(results);
                         });
                     },
                 });
