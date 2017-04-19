@@ -2,6 +2,8 @@
 
 namespace Backpack\CRUD\PanelTraits;
 
+use Illuminate\Support\Arr;
+
 trait FakeFields
 {
     /**
@@ -10,7 +12,8 @@ trait FakeFields
      * plus the '_token' and 'redirect_after_save' variables.
      *
      * @param Request $request - everything that was sent from the form, usually \Request::all()
-     * @param string  $form    - create/update - to determine what fields should be compacted
+     * @param string $form - create/update - to determine what fields should be compacted
+     * @param int|bool $id
      *
      * @return array
      */
@@ -21,30 +24,35 @@ trait FakeFields
         // get the right fields according to the form type (create/update)
         $fields = $this->getFields($form, $id);
 
+        $locale = $request['locale'] ?? \App::getLocale();
+
         // go through each defined field
         foreach ($fields as $k => $field) {
             // if it's a fake field and the field is included in the request
-            if (isset($fields[$k]['fake']) && $fields[$k]['fake'] == true && isset($request[$fields[$k]['name']])) {
-                // add it to the request in its appropriate variable - the one defined, if defined
-                if (isset($fields[$k]['store_in'])) {
-                    $request[$fields[$k]['store_in']][$fields[$k]['name']] = $request[$fields[$k]['name']];
+            if (isset($fields[$k]['fake']) && $fields[$k]['fake'] == true) {
+                if (Arr::exists($request, $field['name'])) {
+                    $store_in = array_get($field, 'store_in', 'extras');
 
                     // remove the fake field
-                    array_pull($request, $fields[$k]['name']);
+                    $value = array_pull($request, $field['name']);
 
-                    if (! in_array($fields[$k]['store_in'], $fake_field_columns_to_encode, true)) {
-                        array_push($fake_field_columns_to_encode, $fields[$k]['store_in']);
-                    }
-                } else {
-                    //otherwise in the one defined in the $crud variable
+                    if (!empty($value)) {
+                        if (property_exists($this->model, 'translatable') && in_array($k, $this->model->getTranslatableAttributes(), true)) {
+                            $current = [];
+                            if ($id !== false) {
+                                $item = $this->model->findOrFail($id);
+                                $current = array_get($item->{$store_in}, $field['name'], []);
+                            }
 
-                    $request['extras'][$fields[$k]['name']] = $request[$fields[$k]['name']];
+                            $current[$locale] = $value;
+                            $value = $current;
+                        }
 
-                    // remove the fake field
-                    array_pull($request, $fields[$k]['name']);
+                        $request[$store_in][$field['name']] = $value;
 
-                    if (! in_array('extras', $fake_field_columns_to_encode, true)) {
-                        array_push($fake_field_columns_to_encode, 'extras');
+                        if (! in_array($store_in, $fake_field_columns_to_encode, true)) {
+                            array_push($fake_field_columns_to_encode, $store_in);
+                        }
                     }
                 }
             }
@@ -53,10 +61,7 @@ trait FakeFields
         // json_encode all fake_value columns in the database, so they can be properly stored and interpreted
         if (count($fake_field_columns_to_encode)) {
             foreach ($fake_field_columns_to_encode as $key => $value) {
-                if (property_exists($this->model, 'translatable') && in_array($value, $this->model->getTranslatableAttributes(), true)) {
-                    // don't json_encode spatie/translatable fake columns
-                    $request[$value] = $request[$value];
-                } else {
+                if (!property_exists($this->model, 'translatable') || !in_array($value, $this->model->getTranslatableAttributes(), true)) {
                     $request[$value] = json_encode($request[$value]);
                 }
             }
