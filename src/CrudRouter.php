@@ -18,38 +18,50 @@ class CrudRouter
         $this->controller = $controller;
         $this->options = $options;
 
+        $prefix = $this->name;
+        if (strpos($this->name, '.') !== false) {
+            $parts = explode('.', $this->name);
+            $resource = array_pop($parts);
+            $prefix = '';
+
+            foreach($parts as $name) {
+                $prefix .= "{$name}/{{$name}}/";
+            }
+            $prefix .= $resource;
+        }
+
         // CRUD routes for core features
-        Route::post($this->name.'/search', [
+        Route::post($prefix.'/search', [
             'as' => 'crud.'.$this->name.'.search',
             'uses' => $this->controller.'@search',
         ]);
 
-        Route::get($this->name.'/reorder', [
+        Route::get($prefix.'/reorder', [
             'as' => 'crud.'.$this->name.'.reorder',
             'uses' => $this->controller.'@reorder',
         ]);
 
-        Route::post($this->name.'/reorder', [
+        Route::post($prefix.'/reorder', [
             'as' => 'crud.'.$this->name.'.save.reorder',
             'uses' => $this->controller.'@saveReorder',
         ]);
 
-        Route::get($this->name.'/{id}/details', [
+        Route::get($prefix.'/{id}/details', [
             'as' => 'crud.'.$this->name.'.showDetailsRow',
             'uses' => $this->controller.'@showDetailsRow',
         ]);
 
-        Route::get($this->name.'/{id}/translate/{lang}', [
+        Route::get($prefix.'/{id}/translate/{lang}', [
             'as' => 'crud.'.$this->name.'.translateItem',
             'uses' => $this->controller.'@translateItem',
         ]);
 
-        Route::get($this->name.'/{id}/revisions', [
+        Route::get($prefix.'/{id}/revisions', [
             'as' => 'crud.'.$this->name.'.listRevisions',
             'uses' => $this->controller.'@listRevisions',
         ]);
 
-        Route::post($this->name.'/{id}/revisions/{revisionId}/restore', [
+        Route::post($prefix.'/{id}/revisions/{revisionId}/restore', [
             'as' => 'crud.'.$this->name.'.restoreRevision',
             'uses' => $this->controller.'@restoreRevision',
         ]);
