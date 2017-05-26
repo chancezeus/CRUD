@@ -1,7 +1,7 @@
 /*!========================================================================
- * Bootstrap: iconset-ionicon-1.5.2.js by @recktoner 
+ * Bootstrap: iconset-ionicon-1.5.2.js by @recktoner
  * https://victor-valencia.github.com/bootstrap-iconpicker
- * 
+ *
  * Iconset: Ionicons 1.5.2
  * http://ionicons.com/
  * ========================================================================
@@ -129,7 +129,7 @@
             'compass',
             'pinpoint',
             'pin',
-            'navigate',
+            'filter',
             'location',
             'map',
             'model-s',
@@ -431,8 +431,8 @@
             'ios7-drag',
             'ios7-location',
             'ios7-location-outline',
-            'ios7-navigate',
-            'ios7-navigate-outline',
+            'ios7-filter',
+            'ios7-filter-outline',
             'ios7-locked',
             'ios7-locked-outline',
             'ios7-unlocked',
@@ -630,5 +630,5 @@
             'social-tux',
             'social-freebsd-devil'
         ]};
-    
+
 })(jQuery);

@@ -3064,7 +3064,7 @@ the specific language governing permissions and limitations under the Apache Lic
             });
             this.setVal(val);
         },
-        
+
         createChoice: function (data) {
             var enableChoice = !data.locked,
                 enabledItem = $(
@@ -3516,7 +3516,7 @@ the specific language governing permissions and limitations under the Apache Lic
     $.fn.select2.locales = [];
 
     $.fn.select2.locales['en'] = {
-         formatMatches: function (matches) { if (matches === 1) { return "One result is available, press enter to select it."; } return matches + " results are available, use up and down arrow keys to navigate."; },
+         formatMatches: function (matches) { if (matches === 1) { return "One result is available, press enter to select it."; } return matches + " results are available, use up and down arrow keys to filter."; },
          formatNoMatches: function () { return "No matches found"; },
          formatAjaxError: function (jqXHR, textStatus, errorThrown) { return "Loading failed"; },
          formatInputTooShort: function (input, min) { var n = min - input.length; return "Please enter " + n + " or more character" + (n == 1 ? "" : "s"); },
