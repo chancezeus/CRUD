@@ -143,6 +143,7 @@ trait HasTranslations
      * to save the slug for the appropriate language.
      *
      * @param string
+     * @return string
      */
     public function getLocale()
     {
