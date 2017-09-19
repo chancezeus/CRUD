@@ -41,65 +41,84 @@ trait HasTranslations
         return $translation;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    |                            ELOQUENT OVERWRITES
-    |--------------------------------------------------------------------------
-    */
-
     /**
-     * Create translated items as json.
+     * Set a given attribute on the model.
      *
-     * @param array $attributes
-     * @return static
+     * @param  string $key
+     * @param  mixed $value
+     * @return $this
      */
-    public static function create(array $attributes = [])
+    public function setAttribute($key, $value)
     {
-        $locale = $attributes['locale'] ?? \App::getLocale();
-        $attributes = array_except($attributes, ['locale']);
-
-        $model = new static();
-
-        // do the actual saving
-        foreach ($attributes as $attribute => $value) {
-            if ($model->isTranslatableAttribute($attribute)) { // the attribute is translatable
-                $model->setTranslation($attribute, $locale, $value);
-            } else { // the attribute is NOT translatable
-                $model->{$attribute} = $value;
-            }
-        }
-        $model->save();
-
-        return $model;
-    }
-
-    /**
-     * Update translated items as json.
-     *
-     * @param array $attributes
-     * @param array $options
-     * @return bool
-     */
-    public function update(array $attributes = [], array $options = [])
-    {
-        if (! $this->exists) {
-            return false;
+        if (! $this->isTranslatableAttribute($key)) {
+            return parent::setAttribute($key, $value);
         }
 
         $locale = $attributes['locale'] ?? \App::getLocale();
-        $attributes = array_except($attributes, ['locale']);
+        $this->setTranslation($key, $locale, $value);
 
-        // do the actual saving
-        foreach ($attributes as $attribute => $value) {
-            if ($this->isTranslatableAttribute($attribute)) { // the attribute is translatable
-                $this->setTranslation($attribute, $locale, $value);
-            } else { // the attribute is NOT translatable
-                $this->{$attribute} = $value;
-            }
-        }
-
-        return $this->save($options);
+        return $this;
     }
+
+//    /*
+//    |--------------------------------------------------------------------------
+//    |                            ELOQUENT OVERWRITES
+//    |--------------------------------------------------------------------------
+//    */
+//
+//    /**
+//     * Create translated items as json.
+//     *
+//     * @param array $attributes
+//     * @return static
+//     */
+//    public static function create(array $attributes = [])
+//    {
+//        $locale = $attributes['locale'] ?? \App::getLocale();
+//        $attributes = array_except($attributes, ['locale']);
+//
+//        $model = new static();
+//
+//        // do the actual saving
+//        foreach ($attributes as $attribute => $value) {
+//            if ($model->isTranslatableAttribute($attribute)) { // the attribute is translatable
+//                $model->setTranslation($attribute, $locale, $value);
+//            } else { // the attribute is NOT translatable
+//                $model->{$attribute} = $value;
+//            }
+//        }
+//        $model->save();
+//
+//        return $model;
+//    }
+//
+//    /**
+//     * Update translated items as json.
+//     *
+//     * @param array $attributes
+//     * @param array $options
+//     * @return bool
+//     */
+//    public function update(array $attributes = [], array $options = [])
+//    {
+//        if (! $this->exists) {
+//            return false;
+//        }
+//
+//        $locale = $attributes['locale'] ?? \App::getLocale();
+//        $attributes = array_except($attributes, ['locale']);
+//
+//        // do the actual saving
+//        foreach ($attributes as $attribute => $value) {
+//            if ($this->isTranslatableAttribute($attribute)) { // the attribute is translatable
+//                $this->setTranslation($attribute, $locale, $value);
+//            } else { // the attribute is NOT translatable
+//                $this->{$attribute} = $value;
+//            }
+//        }
+//
+//        return $this->save($options);
+//    }
 
     /*
     |--------------------------------------------------------------------------
