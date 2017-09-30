@@ -2,7 +2,6 @@
 
 namespace Backpack\CRUD\ModelTraits\SpatieTranslatable;
 
-use Illuminate\Database\Eloquent\Builder;
 use Cviebrock\EloquentSluggable\SluggableScopeHelpers as OriginalSluggableScopeHelpers;
 
 trait SluggableScopeHelpers
@@ -10,40 +9,29 @@ trait SluggableScopeHelpers
     use OriginalSluggableScopeHelpers;
 
     /**
-     * Query scope for finding a model by its primary slug.
+     * Primary slug column of this model.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $scope
-     * @param string $slug
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return string
      */
-    public function scopeWhereSlug(Builder $scope, $slug)
+    public function getSlugKeyName(): string
     {
-        return $scope->where($this->getSlugKeyName().'->'.$this->getLocale(), $slug);
-    }
+        if (property_exists($this, 'slugKeyName')) {
+            $key = $this->slugKeyName;
+        } else {
+            $config = $this->sluggable();
+            $name = reset($config);
+            $key = key($config);
 
-    /**
-     * Find a model by its primary slug.
-     *
-     * @param string $slug
-     * @param array $columns
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection|static[]|static|null
-     */
-    public static function findBySlug($slug, array $columns = ['*'])
-    {
-        return static::whereSlug($slug)->first($columns);
-    }
+            // check for short configuration
+            if ($key === 0) {
+                $key = $name;
+            }
+        }
 
-    /**
-     * Find a model by its primary slug or throw an exception.
-     *
-     * @param string $slug
-     * @param array $columns
-     * @return \Illuminate\Database\Eloquent\Model|\Illuminate\Database\Eloquent\Collection
-     *
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
-     */
-    public static function findBySlugOrFail($slug, array $columns = ['*'])
-    {
-        return static::whereSlug($slug)->firstOrFail($columns);
+        if (in_array(HasTranslations::class, class_uses_recursive($this)) && $this->isTranslatableAttribute($key) && strpos($key, '->') === false) {
+            $key = $key . '->' . $this->getLocale();
+        }
+
+        return $key;
     }
 }

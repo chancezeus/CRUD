@@ -27,7 +27,7 @@ trait HasTranslations
      */
     public function getAttributeValue($key)
     {
-        if (! $this->isTranslatableAttribute($key)) {
+        if (!$this->isTranslatableAttribute($key)) {
             return parent::getAttributeValue($key);
         }
 
@@ -41,64 +41,26 @@ trait HasTranslations
         return $translation;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    |                            ELOQUENT OVERWRITES
-    |--------------------------------------------------------------------------
-    */
-
     /**
-     * Create translated items as json.
+     * Set a given attribute on the model.
      *
-     * @param array $attributes
-     * @return static
+     * @param  string $key
+     * @param  mixed $value
+     * @return $this
      */
-    public static function create(array $attributes = [])
+    public function setAttribute($key, $value)
     {
-        $locale = $attributes['locale'] ?? \App::getLocale();
-        $attributes = array_except($attributes, ['locale']);
-
-        $model = new static();
-
-        // do the actual saving
-        foreach ($attributes as $attribute => $value) {
-            if ($model->isTranslatableAttribute($attribute)) { // the attribute is translatable
-                $model->setTranslation($attribute, $locale, $value);
-            } else { // the attribute is NOT translatable
-                $model->{$attribute} = $value;
-            }
-        }
-        $model->save();
-
-        return $model;
-    }
-
-    /**
-     * Update translated items as json.
-     *
-     * @param array $attributes
-     * @param array $options
-     * @return bool
-     */
-    public function update(array $attributes = [], array $options = [])
-    {
-        if (! $this->exists) {
-            return false;
+        if ($key == 'locale') {
+            return $this->setLocale($value);
         }
 
-        $locale = $attributes['locale'] ?? \App::getLocale();
-        $attributes = array_except($attributes, ['locale']);
-
-        // do the actual saving
-        foreach ($attributes as $attribute => $value) {
-            if ($this->isTranslatableAttribute($attribute)) { // the attribute is translatable
-                $this->setTranslation($attribute, $locale, $value);
-            } else { // the attribute is NOT translatable
-                $this->{$attribute} = $value;
-            }
+        if (!$this->isTranslatableAttribute($key)) {
+            return parent::setAttribute($key, $value);
         }
 
-        return $this->save($options);
+        $this->setTranslation($key, $this->getLocale(), $value);
+
+        return $this;
     }
 
     /*
@@ -132,10 +94,13 @@ trait HasTranslations
      * to a different language that the one set in app()->getLocale();.
      *
      * @param string
+     * @return $this
      */
     public function setLocale($locale)
     {
         $this->locale = $locale;
+
+        return $this;
     }
 
     /**
@@ -143,6 +108,7 @@ trait HasTranslations
      * to save the slug for the appropriate language.
      *
      * @param string
+     * @return string
      */
     public function getLocale()
     {
@@ -158,7 +124,7 @@ trait HasTranslations
      *
      * @param string $method
      * @param array $parameters
-     * @return
+     * @return mixed
      */
     public function __call($method, $parameters)
     {
@@ -170,7 +136,7 @@ trait HasTranslations
             case 'findBySlug':
             case 'findBySlugOrFail':
 
-                $translation_locale = \Request::input('locale', \App::getLocale());
+                $translation_locale = $this->getLocale();
 
                 if ($translation_locale) {
                     $item = parent::__call($method, $parameters);
