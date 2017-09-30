@@ -27,7 +27,7 @@ trait HasTranslations
      */
     public function getAttributeValue($key)
     {
-        if (!$this->isTranslatableAttribute($key)) {
+        if (! $this->isTranslatableAttribute($key)) {
             return parent::getAttributeValue($key);
         }
 
@@ -54,7 +54,7 @@ trait HasTranslations
             return $this->setLocale($value);
         }
 
-        if (!$this->isTranslatableAttribute($key)) {
+        if (! $this->isTranslatableAttribute($key)) {
             return parent::setAttribute($key, $value);
         }
 

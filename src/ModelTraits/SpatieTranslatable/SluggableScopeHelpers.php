@@ -29,7 +29,7 @@ trait SluggableScopeHelpers
         }
 
         if (in_array(HasTranslations::class, class_uses_recursive($this)) && $this->isTranslatableAttribute($key) && strpos($key, '->') === false) {
-            $key = $key . '->' . $this->getLocale();
+            $key = $key.'->'.$this->getLocale();
         }
 
         return $key;

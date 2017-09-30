@@ -23,12 +23,12 @@ trait Sluggable
         $separator = $config['separator'];
 
         if (in_array(HasTranslations::class, class_uses_recursive($this)) && $this->isTranslatableAttribute($attribute)) {
-            $attribute = $attribute . '->' . $this->getLocale();
+            $attribute = $attribute.'->'.$this->getLocale();
         }
 
         return $query->where(function (Builder $q) use ($attribute, $slug, $separator) {
             $q->where($attribute, '=', $slug)
-                ->orWhere($attribute, 'LIKE', $slug . $separator . '%');
+                ->orWhere($attribute, 'LIKE', $slug.$separator.'%');
         });
     }
 }
